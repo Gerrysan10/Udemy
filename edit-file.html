@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Archivo</title>
+</head>
+<body>
+    <h1>Editar Archivo</h1>
+
+    <form id="edit-form">
+        <textarea id="file-content" name="content" rows="10" cols="50"></textarea>
+        <br>
+        <button type="submit">Guardar Cambios</button>
+        <button type="button" onclick="cancelEdit()">Cancelar</button>
+    </form>
+
+    <script>
+        // Obtener el nombre del archivo y su contenido del servidor
+const params = new URLSearchParams(window.location.search);
+const fileName = params.get("fileName");
+const fileContent = params.get("fileContent"); // Cambiar "fileContent" aquí
+
+        // Rellenar el campo de texto con el contenido actual del archivo
+        document.getElementById("file-content").value = fileContent;
+
+        // Enviar el formulario para guardar los cambios
+        document.getElementById("edit-form").addEventListener("submit", function (e) {
+            e.preventDefault();
+            const newContent = document.getElementById("file-content").value;
+
+            // Realizar una solicitud AJAX para guardar los cambios
+            fetch(`/save-file?fileName=${fileName}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ content: newContent }),
+            })
+                .then((response) => response.text())
+                .then((data) => {
+                    alert(data); // Muestra un mensaje con la respuesta del servidor
+                })
+                .catch((error) => {
+                    console.error("Error al guardar los cambios:", error);
+                });
+        });
+
+        // Función para cancelar la edición y volver a la lista de archivos
+        function cancelEdit() {
+            window.location.href = "/";
+        }
+    </script>
+</body>
+</html>

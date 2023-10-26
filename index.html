@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Archivos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f2f2f2;
+        }
+
+        h1 {
+            margin-top: 20px;
+        }
+
+        form {
+            margin: 20px;
+        }
+
+        input[type="file"] {
+            padding: 10px;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+        }
+
+        input[type="submit"] {
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        h2 {
+            margin-top: 20px;
+        }
+
+        table {
+            margin: 20px auto;
+            border-collapse: collapse;
+            width: 80%;
+            background-color: white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #3498db;
+            color: white;
+        }
+
+        td {
+            background-color: #f9f9f9;
+        }
+
+        a {
+            text-decoration: none;
+            color: #3498db;
+        }
+
+        button {
+            padding: 5px 10px;
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Cargar archivos</h1>
+    <form action="/upload" method="POST" enctype="multipart/form-data">
+        <input type="file" name="files" multiple required>
+        <input type="submit" value="Cargar Archivos">
+    </form>
+
+    <h2>Lista de Archivos</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Archivos</th>
+                <th>Ver</th>
+                <th>Editar</th>
+                <th>Eliminar</th>
+            </tr>
+        </thead>
+        <tbody id="file-list">
+            <!-- Las filas de la tabla se generarán aquí -->
+        </tbody>
+    </table>
+
+    <script>
+        // Realiza una solicitud AJAX para obtener la lista de archivos
+        function populateFileList() {
+            fetch('/file-list')
+                .then(response => response.json())
+                .then(data => {
+                    const fileList = document.getElementById('file-list');
+                    fileList.innerHTML = ''; // Limpia la lista actual
+
+                    data.forEach(fileName => {
+                        const row = document.createElement('tr');
+                        const fileNameCell = document.createElement('td');
+                        fileNameCell.textContent = fileName;
+
+                        // Agrega un enlace en la segunda celda para ver el archivo
+                        const viewLinkCell = document.createElement('td');
+                        const viewLink = document.createElement('a');
+                        viewLink.textContent = getFileButtonText(fileName);
+                        viewLink.href = `/view-file?fileName=${fileName}`;
+                        viewLinkCell.appendChild(viewLink);
+
+                        // Agrega un botón de editar en la tercera celda
+                        const editButtonCell = document.createElement('td');
+                        const editButton = document.createElement('button');
+                        editButton.textContent = 'Editar';
+                        editButton.addEventListener('click', () => {
+                            editFile(fileName);
+                        });
+                        editButtonCell.appendChild(editButton);
+
+                        // Agrega un botón de eliminar en la cuarta celda
+                        const deleteButtonCell = document.createElement('td');
+                        const deleteButton = document.createElement('button');
+                        deleteButton.textContent = 'Eliminar';
+                        deleteButton.addEventListener('click', () => {
+                            deleteFile(fileName);
+                        });
+                        deleteButtonCell.appendChild(deleteButton);
+
+                        row.appendChild(fileNameCell);
+                        row.appendChild(viewLinkCell);
+                        row.appendChild(editButtonCell);
+                        row.appendChild(deleteButtonCell);
+                        fileList.appendChild(row);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error al obtener la lista de archivos:', error);
+                });
+        }
+
+        // Llama a populateFileList al cargar la página y después de eliminar un archivo
+        populateFileList();
+
+        // Función para editar un archivo de texto
+        function editFile(fileName) {
+            window.location.href = `/edit-file?fileName=${fileName}`;
+        }
+
+        // Función para eliminar un archivo
+        function deleteFile(fileName) {
+            fetch(`/delete-file?fileName=${fileName}`, { method: 'DELETE' })
+                .then(response => {
+                    if (response.ok) {
+                        populateFileList(); // Vuelve a cargar la lista de archivos actualizada
+                    } else {
+                        console.error('Error al eliminar el archivo');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error al eliminar el archivo:', error);
+                });
+        }
+
+        // Función para personalizar el texto del botón según la extensión
+        function getFileButtonText(fileName) {
+            const fileExtension = fileName.split('.').pop().toLowerCase();
+            switch (fileExtension) {
+                case 'jpg':
+                case 'jpeg':
+                    return 'Ver Imagen';
+                case 'png':
+                    return 'Ver PNG';
+                case 'txt':
+                    return 'Ver Texto';
+                default:
+                    return 'Descargar';
+            }
+        }
+    </script>
+</body>
+</html>

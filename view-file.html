@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ver Archivo</title>
+</head>
+<body>
+    <h1>Contenido del Archivo</h1>
+
+    <!-- Mostrar el contenido del archivo -->
+    <div id="file-content">
+        <!-- El contenido del archivo se mostrará aquí -->
+    </div>
+
+    <script>
+        // Función para mostrar contenido según el tipo de archivo
+        function displayContent(content) {
+            const fileContentDiv = document.getElementById('file-content');
+            
+            // Verifica si el contenido es una imagen (puedes agregar más tipos)
+            if (content.startsWith('data:image/')) {
+                // Si es una imagen, crea un elemento de imagen para mostrarla
+                const img = document.createElement('img');
+                img.src = content;
+                fileContentDiv.appendChild(img);
+            } else {
+                // Si no es una imagen, simplemente muestra el texto
+                fileContentDiv.textContent = content;
+            }
+        }
+
+        // Realiza una solicitud AJAX para obtener el contenido del archivo
+        fetch(`/view-file?fileName=${encodeURIComponent(window.location.search.substr(1))}`)
+            .then(response => response.text())
+            .then(data => {
+                displayContent(data); // Muestra el contenido
+            })
+            .catch(error => {
+                console.error('Error al obtener el contenido del archivo:', error);
+            });
+    </script>
+</body>
+</html>
